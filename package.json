@@ -1,0 +1,33 @@
+{
+  "name": "node-web",
+  "version": "1.0.0",
+  "description": "simple node web project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanyan1716330643/node-web.git"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "ejs": "~2.5.7",
+    "express": "~4.16.0",
+    "http-errors": "~1.6.2",
+    "morgan": "~1.9.0",
+    "ws": "^6.0.0",
+    "mongodb": "^3.1.4",
+    "mongoose": "^5.2.10",
+    "mysql": "^2.16.0",
+    "redis": "^2.8.0",
+    "express-status-monitor": "^1.1.5"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yanyan1716330643/node-web/issues"
+  },
+  "homepage": "https://github.com/yanyan1716330643/node-web#readme"
+}
