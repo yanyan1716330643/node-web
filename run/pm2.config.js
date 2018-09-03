@@ -1,2 +1,2 @@
-let profileConfig = require('./profile/local/yanyan.config');
-module.exports = profileConfig;
+let profile = require('./profile/local/yanyan.config');
+module.exports = profile;
