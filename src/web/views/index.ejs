@@ -2,21 +2,100 @@
 <html>
 <head>
     <title><%= title %></title>
-    <!--<link rel='stylesheet' href='/stylesheets/style.css'/>-->
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <script language="JavaScript" src="/javascripts/jquery-3.3.1.min.js"></script>
 </head>
 <body>
 <h1><%= title %></h1>
 <p>Welcome to <%= title %></p>
-<div style="border:2px">
-    <ul>
-        <li>dddd</li>
-    </ul>
-</div>
-<input>
-<button>send</button>
+<hr>
+
+<span>get</span>
+<button id="button-getTime">getTime</button>
+<span id="show-time"></span>
+<hr/>
+
+<span>post</span>
+<button id="button-getUser">getUser</button>
+<span id="show-user"></span>
 </body>
+<hr/>
+
+<span>delete</span>
+<button id="button-deletePhone">deletePhone</button>
+<span id="show-deletePhone"></span>
+</body>
+<hr/>
+
+<span>put</span>
+<button id="button-addPhone">addPhone</button>
+<span id="show-addPhone"></span>
+</body>
+<hr/>
 
 <script>
+    $("#button-getTime").click(function () {
+        $.ajax({
+            type: "GET",
+            url: "/demo/serverTime",
+            success: function (data) {
+                $("#show-time").html("time:" + data);
+            },
+            error: function () {
+                $("#show-time").html("error");
+            }
+        });
+    });
+
+    $("#button-getUser").click(function () {
+        $.ajax({
+            type: "POST",
+            url: "/demo/user",
+            data:{
+                username:"yanyan",
+                password:"test1234"
+            },
+            success: function (data) {
+                $("#show-user").html("user:" + data);
+            },
+            error: function () {
+                $("#show-user").html("error");
+            }
+        });
+    });
+
+    $("#button-deletePhone").click(function () {
+        $.ajax({
+            type: "DELETE",
+            url: "/demo/phone",
+            data:{
+                username:"13412341234"
+            },
+            success: function (data) {
+                $("#show-deletePhone").html("" + data);
+            },
+            error: function () {
+                $("#show-deletePhone").html("error");
+            }
+        });
+    });
+
+    $("#button-addPhone").click(function () {
+        $.ajax({
+            type: "PUT",
+            url: "/demo/phone",
+            data:{
+                username:"1234134134"
+            },
+            success: function (data) {
+                $("#show-addPhone").html("" + data);
+            },
+            error: function () {
+                $("#show-addPhone").html("error");
+            }
+        });
+    });
+
 
 </script>
 </html>

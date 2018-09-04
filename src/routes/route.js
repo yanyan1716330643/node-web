@@ -3,12 +3,13 @@ let express = require('express');
 let route = express.Router();
 let tryRoute = require('./subRoute/tryRoute');
 let defaultRoute = require('./subRoute/defaultRoute');
+let demoRoute = require('./subRoute/demoRoute');
 
 
 
 
-
-
+//demo路由
+route.use("/demo",demoRoute);
 //测试路由
 route.use("/test",tryRoute);
 //user路由
