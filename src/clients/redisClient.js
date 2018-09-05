@@ -1,6 +1,6 @@
 let consoleUtil = require("../utils/consoleUtil");
 let redis = require('redis');
-let pm2Env = require('../../run/pm2.config').apps[0].env;
+let pm2Env = require('../../run/pm2.config').apps[0].env;//todo 即使是release环境也有 env
 
 let redisConfig = process.env.REDIS_CONFIG || pm2Env.REDIS_CONFIG;
 redisConfig = JSON.parse(JSON.stringify(redisConfig));
