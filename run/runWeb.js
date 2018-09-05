@@ -6,8 +6,8 @@
 let pm2Env = require('./pm2.config').apps[0].env;
 let consoleUtil = require('../src/utils/consoleUtil');
 let config = require('../src/appConfig');
-let mysqlClient = require('../src/clients/mysqlClient');
-let redisClient = require('../src/clients/redisClient');
+//let mysqlClient = require('../src/clients/mysqlClient');
+//let redisClient = require('../src/clients/redisClient');
 let wsServer = require('../src/servers/wsServer');
 
 /**
