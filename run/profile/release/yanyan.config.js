@@ -16,9 +16,9 @@ let mysqlConfig = {
 };
 
 let wsConfig = {
-    host:localIp
+    host:localIp,
+    port:8080
 };
-
 
 module.exports = {
     apps: [{
@@ -29,7 +29,8 @@ module.exports = {
             IP:localIp,
             PORT: 80,
             REDIS_CONFIG: redisConfig,
-            MYSQL_CONFIG:mysqlConfig
+            MYSQL_CONFIG:mysqlConfig,
+            WS_CONFIG:wsConfig
         }
     }]
 };

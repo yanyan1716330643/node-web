@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><%= title %></title>
+    <title><%= title %>  </title>
     <meta name="viewport" content="width=device-width, user-scalable=no" />
-    <link rel="stylesheet" href="/stylesheets/demo/canvas.css"/>
-    <link rel="stylesheet" href="/stylesheets/demo/style.css"/>
+    <link rel="stylesheet" href="/stylesheets/demo/canvas/canvas.css"/>
+    <link rel="stylesheet" href="/stylesheets/demo/canvas/style.css"/>
     <script language="JavaScript" src="/javascripts/jquery-3.3.1.min.js"></script>
 </head>
 <body>
@@ -31,16 +31,41 @@
 <!--<script type="text/javascript" src="/javascripts/demo/canvas.js"></script>-->
 <!--<script src="/socket.io/socket.io.js"></script>-->
 <script>
-    // var socket = io.connect('http://localhost:3001')
-    // var username = window.location.search.split('=')[1]
-    // if (username !== 'lsp') {
-    //     $('.pro-canvas').css('display', 'none')
-    // }
-    // socket.on('drawCanvas', function (data) {
-    //     // console.log('drawCanvas', data)
-    //     $("#drawCanvas").attr('src', data)
-    // })
-    // var username = null;
+    let ws = new WebSocket("ws://<%= wsIp %>:<%= wsPort %>");
+    ws.onopen = function() {
+        console.log("onopen", "连接状态:" + ws.readyState);
+    };
+    ws.onmessage = function(evt) {
+        console.log("onmessage", "data:" + evt.data);
+    };
+    ws.onclose = function(evt) {
+        console.log("onclose");
+    };
+    ws.onerror = function(evt) {
+        console.log("onerror");
+    };
+
+    function send(trace,traceVersion) {
+        let wsMsg = {
+            app:"demo1",
+            user:"yanyan",
+            type:0,
+            data:{
+                trace:trace,
+                traceVersion:traceVersion,
+            }
+        };
+        console.log("发送",JSON.stringify(wsMsg));
+        ws.send(JSON.stringify(wsMsg));
+    };
+
+    function exit() {
+        ws.close();
+    }
+
+
+
+
 
 
     let line = {lineWidth:1,lineColor:"#ff0000",points:[]};
@@ -108,6 +133,9 @@
         }
         trace.push(line);
         traceVersion = traceVersion+1;
+        drawLine(line);
+        //send(line,traceVersion);
+        send(trace,traceVersion);
         line={lineWidth:1,lineColor:"#ff0000",points:[]};
         console.log('onmouseup');
     }
@@ -132,11 +160,11 @@
                 context.moveTo(currentLocation.x, currentLocation.y);
             }
             context.lineTo(currentLocation.x, currentLocation.y);
-            context.strokeStyle = strokeColor
+            context.strokeStyle = "#afafaf"
             context.lineWidth = 1
             context.lineCap = 'round'
             context.lineJoin = 'round'
-            context.stroke()
+            context.stroke();
 
 
             //
@@ -155,11 +183,13 @@
     $("#draw_btn").click(function () {
         console.log("drawing");
         drawTrace(trace,traceVersion);
+        send(trace,traceVersion);
     });
 
     $("#clear_btn").click(function () {
         console.log("cleaning");
         context.clearRect(0, 0, canvasWidth, canvasHeight);
+        send(trace,0);
     });
 
     $("#revoke0_btn").click(function () {
@@ -170,6 +200,7 @@
         traceVersion=traceVersion-1
         context.clearRect(0, 0, canvasWidth, canvasHeight);
         drawTrace(trace,traceVersion);
+        send(trace,traceVersion);
     });
 
     $("#revoke1_btn").click(function () {
@@ -180,6 +211,7 @@
         traceVersion=traceVersion+1
         context.clearRect(0, 0, canvasWidth, canvasHeight);
         drawTrace(trace,traceVersion);
+        send(trace,traceVersion);
     });
 
     function drawTrace(trace,traceVersion) {

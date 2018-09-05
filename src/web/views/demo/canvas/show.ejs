@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %>  </title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <link rel="stylesheet" href="/stylesheets/demo/canvas/canvas.css"/>
+    <link rel="stylesheet" href="/stylesheets/demo/canvas/style.css"/>
+    <script language="JavaScript" src="/javascripts/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<div class="pro-canvas">
+    <canvas id="canvas">
+        您的浏览器不支持canvas
+    </canvas>
+</div>
+</body>
+<!--<script type="text/javascript" src="/javascripts/demo/canvas.js"></script>-->
+<!--<script src="/socket.io/socket.io.js"></script>-->
+<script>
+    let ws = new WebSocket("ws://<%= wsIp %>:<%= wsPort %>");
+    ws.onopen = function() {
+        console.log("onopen", "连接状态:" + ws.readyState);
+    };
+    ws.onmessage = function(evt) {
+        console.log("onmessage", "data:" + evt.data);
+        let data = JSON.parse(evt.data).data;
+        context.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawTrace(data.trace,data.traceVersion)
+    };
+    ws.onclose = function(evt) {
+        console.log("onclose");
+    };
+    ws.onerror = function(evt) {
+        console.log("onerror");
+    };
+
+    function send() {
+        let wsMsg = {
+            app:"demo1",
+            user:"yanyan",
+            type:0,
+            data:{}
+        };
+        console.log("发送",JSON.stringify(wsMsg));
+        ws.send(JSON.stringify(wsMsg));
+    };
+
+    function exit() {
+        ws.close();
+    }
+
+
+
+    let canvasWidth = Math.min(800, $(window).width() - 20);
+    let canvasHeight = Math.min(800, $(window).width() - 20);
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    $('#controller').css('width', canvasWidth + 'px');
+
+
+    function drawTrace(trace,traceVersion) {
+        if (!trace){
+            return
+        }
+        if (trace.length<1){
+            return
+        }
+        for (let i = 0; i < traceVersion; i++) {
+            drawLine(trace[i]);
+        }
+
+    }
+
+    function drawLine(line) {
+        if (!line){
+            return
+        }
+        if (line.points<2){
+            return
+        }
+        let pointArr=line.points;
+        context.beginPath();
+        context.moveTo(pointArr[0].x, pointArr[0]);
+        for (let i=0;i<pointArr.length;i++){
+            console.log(pointArr[i].x, pointArr[i].y)
+            context.lineTo(pointArr[i].x, pointArr[i].y);
+        }
+        context.lineTo(pointArr[pointArr.length-1].x,pointArr[pointArr.length-1].y);
+        context.strokeStyle = line.lineColor;
+        context.lineWidth = line.lineWidth;
+        context.lineCap = 'round'
+        context.lineJoin = 'round'
+        context.stroke();
+    }
+</script>
+</html>

@@ -1,3 +1,4 @@
+var wsConfig = require("../../../run/pm2.config").apps[0].env.WS_CONFIG;
 var express = require('express');
 var router = express.Router();
 
@@ -21,9 +22,21 @@ router.delete('/phone', function(req, res, next) {
     res.send(JSON.stringify({result:"delete out"}));
 });
 
+
+
+
+
+
+
+
 /* GET home page. */
 router.get('/canvas/draw', function(req, res, next) {
-    res.render('demo/canvas/draw', { title: 'canvas draw' });
+    res.render('demo/canvas/draw', { title: 'canvas draw',wsIp:wsConfig.host,wsPort:wsConfig.port});
+});
+
+/* GET home page. */
+router.get('/canvas/show', function(req, res, next) {
+    res.render('demo/canvas/show', { title: 'canvas draw',wsIp:wsConfig.host,wsPort:wsConfig.port});
 });
 
 

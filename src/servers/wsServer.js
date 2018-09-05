@@ -1,7 +1,8 @@
 let consoleUtil = require('../utils/consoleUtil');
+let wsConfig = require('../../run/pm2.config').apps[0].env.WS_CONFIG;
 
 var WebSocketServer = require('ws').Server;
-var wss = new WebSocketServer({port: 8080});
+var wss = new WebSocketServer({port: wsConfig.port});
 // 连接池
 var clients = [];
 wss.on('connection', function(ws) {
@@ -9,6 +10,7 @@ wss.on('connection', function(ws) {
     // 将该连接加入连接池
     clients.push(ws);
     ws.on('message', function(message) {
+        let a = JSON.parse(message);
         consoleUtil.debug("ws message:"+message);
         // 广播消息
         clients.forEach(function(ws1){
@@ -30,5 +32,5 @@ wss.on('connection', function(ws) {
 });
 
 module.exports = WebSocketServer;
-consoleUtil.info("ws start port 8080");
+consoleUtil.info("ws start port"+wsConfig.port);
 consoleUtil.log(__filename);
