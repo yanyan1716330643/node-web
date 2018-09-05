@@ -21,5 +21,10 @@ router.delete('/phone', function(req, res, next) {
     res.send(JSON.stringify({result:"delete out"}));
 });
 
+/* GET home page. */
+router.get('/canvas/draw', function(req, res, next) {
+    res.render('demo/canvas/draw', { title: 'canvas draw' });
+});
+
 
 module.exports = router;

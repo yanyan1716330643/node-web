@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <link rel="stylesheet" href="/stylesheets/demo/canvas.css"/>
+    <link rel="stylesheet" href="/stylesheets/demo/style.css"/>
+    <script language="JavaScript" src="/javascripts/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<div class="pro-canvas">
+    <canvas id="canvas">
+        您的浏览器不支持canvas
+    </canvas>
+    <div id="controller">
+        <div id="black_btn" class="color_btn color_btn_selected"></div>
+        <div id="blue_btn" class="color_btn"></div>
+        <div id="green_btn" class="color_btn"></div>
+        <div id="red_btn" class="color_btn"></div>
+        <div id="orange_btn" class="color_btn"></div>
+        <div id="yellow_btn" class="color_btn"></div>
+
+        <div id="clear_btn" class="op_btn">清除</div>
+        <div id="draw_btn" class="op_btn">图画</div>
+        <div id="revoke0_btn" class="op_btn">-</div>
+        <div id="revoke1_btn" class="op_btn">+</div>
+        <div class="clearfix"></div>
+    </div>
+</div>
+</body>
+<!--<script type="text/javascript" src="/javascripts/demo/canvas.js"></script>-->
+<!--<script src="/socket.io/socket.io.js"></script>-->
+<script>
+    // var socket = io.connect('http://localhost:3001')
+    // var username = window.location.search.split('=')[1]
+    // if (username !== 'lsp') {
+    //     $('.pro-canvas').css('display', 'none')
+    // }
+    // socket.on('drawCanvas', function (data) {
+    //     // console.log('drawCanvas', data)
+    //     $("#drawCanvas").attr('src', data)
+    // })
+    // var username = null;
+
+
+    let line = {lineWidth:1,lineColor:"#ff0000",points:[]};
+    let trace = [];
+    let isDrawing = false;
+    let traceVersion = 0;
+
+
+
+    let canvasWidth = Math.min(800, $(window).width() - 20);
+    let canvasHeight = Math.min(800, $(window).width() - 20);
+    let strokeColor = "#ff0000";//'black';
+    let isMouseDown = false;
+    let lastLoc = {x: 0, y: 0};
+    let lastTimestamp = 0;
+    let lastLineWidth = -1;
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    // let drawCanvas = document.getElementById('drawCanvas');//img
+    // drawCanvas.width = canvasWidth;
+    // drawCanvas.height = canvasHeight;
+    $('#controller').css('width', canvasWidth + 'px');
+
+    let preLocation;
+
+
+    /**
+     * 坐标转换
+     * 注：用以windows窗口左上角(0,0)为坐标原点的点，转换为以canvas左上角(0,0)为原点的坐标
+     * @param x
+     * @param y
+     * @returns {{x: number, y: number}}
+     */
+    function windowToCanvas(x, y) {
+        var box = canvas.getBoundingClientRect()
+        return {x: Math.round(x - box.left), y: Math.round(y - box.top)}
+    }
+
+    /**
+     * 鼠标事件onmousedown
+     * @param e
+     */
+    canvas.onmousedown = function (e) {
+        e.preventDefault(); //阻止默认的动作发生
+        isMouseDown = true;
+        console.log('onmousedown');
+    }
+
+    /**
+     * 鼠标事件onmouseup
+     * @param e
+     */
+    canvas.onmouseup = function (e) {
+        e.preventDefault();
+        isMouseDown = false;
+
+        if (trace.length!=traceVersion){
+            let newTrace = [];
+            for (let i = 0; i < traceVersion; i++) {
+                newTrace.push(trace[i]);
+            }
+            trace = newTrace;
+        }
+        trace.push(line);
+        traceVersion = traceVersion+1;
+        line={lineWidth:1,lineColor:"#ff0000",points:[]};
+        console.log('onmouseup');
+    }
+
+    /**
+     * 鼠标事件onmousemove
+     * @param e
+     */
+    canvas.onmousemove = function (e) {
+        //console.log('onmousemove')
+        //console.log(e.clientX, e.clientY)
+        let  currentLocation = windowToCanvas(e.clientX,e.clientY);
+        //let  currentLocation = {x:e.clientX,y:e.clientY}
+        //console.log(currentLocation.x,currentLocation.y);
+        if (isMouseDown) {
+            e.preventDefault();
+            //moveStroke({x: e.clientX, y: e.clientY});
+            context.beginPath();
+            if (preLocation){
+                context.moveTo(preLocation.x, preLocation.y);
+            }else {
+                context.moveTo(currentLocation.x, currentLocation.y);
+            }
+            context.lineTo(currentLocation.x, currentLocation.y);
+            context.strokeStyle = strokeColor
+            context.lineWidth = 1
+            context.lineCap = 'round'
+            context.lineJoin = 'round'
+            context.stroke()
+
+
+            //
+            let point = {x:null,y:null,createTime:null};
+            let canvasLocation = windowToCanvas(e.clientX,e.clientY);
+            point.x=canvasLocation.x;
+            point.y=canvasLocation.y;
+            point.createTime=new Date();
+            line.points.push(point);
+
+        }
+        preLocation = currentLocation;
+    }
+
+
+    $("#draw_btn").click(function () {
+        console.log("drawing");
+        drawTrace(trace,traceVersion);
+    });
+
+    $("#clear_btn").click(function () {
+        console.log("cleaning");
+        context.clearRect(0, 0, canvasWidth, canvasHeight);
+    });
+
+    $("#revoke0_btn").click(function () {
+        console.log("revoke0_btn ---");
+        if (traceVersion==0){
+            return;
+        }
+        traceVersion=traceVersion-1
+        context.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawTrace(trace,traceVersion);
+    });
+
+    $("#revoke1_btn").click(function () {
+        console.log("revoke0_btn +++");
+        if (traceVersion>trace.length){
+            return;
+        }
+        traceVersion=traceVersion+1
+        context.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawTrace(trace,traceVersion);
+    });
+
+    function drawTrace(trace,traceVersion) {
+        if (!trace){
+            return
+        }
+        if (trace.length<1){
+            return
+        }
+        for (let i = 0; i < traceVersion; i++) {
+            drawLine(trace[i]);
+        }
+
+    }
+
+    function drawLine(line) {
+        if (!line){
+            return
+        }
+        if (line.points<2){
+            return
+        }
+        let pointArr=line.points;
+        context.beginPath();
+        context.moveTo(pointArr[0].x, pointArr[0]);
+        for (let i=0;i<pointArr.length;i++){
+            console.log(pointArr[i].x, pointArr[i].y)
+            context.lineTo(pointArr[i].x, pointArr[i].y);
+        }
+        context.lineTo(pointArr[pointArr.length-1].x,pointArr[pointArr.length-1].y);
+        context.strokeStyle = line.lineColor;
+        context.lineWidth = line.lineWidth;
+        context.lineCap = 'round'
+        context.lineJoin = 'round'
+        context.stroke();
+    }
+</script>
+</html>
