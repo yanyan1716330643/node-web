@@ -47,7 +47,7 @@
 
     function send(trace,traceVersion) {
         let wsMsg = {
-            app:"demo1",
+            app:"demo_canvas",
             user:"yanyan",
             type:0,
             data:{
@@ -247,5 +247,77 @@
         context.lineJoin = 'round'
         context.stroke();
     }
+
+
+
+    /**
+     * canvas 设置触摸开始监听事件
+     */
+    canvas.addEventListener('touchstart', function (e) {
+        e.preventDefault(); //阻止默认的动作发生
+        isMouseDown = true;
+        console.log('onmousedown');
+    });
+
+    /**
+     * 结束touch事件
+     */
+    canvas.addEventListener('touchend', function (e) {
+        e.preventDefault();
+        isMouseDown = false;
+        let newTrace = [];
+        for (let i = 0; i < traceVersion; i++) {
+            newTrace.push(trace[i]);
+        }
+        trace = newTrace;
+        trace.push(line);
+        traceVersion = traceVersion+1;
+        drawLine(line);
+        //send(line,traceVersion);
+        send(trace,traceVersion);
+        line={lineWidth:1,lineColor:"#ff0000",points:[]};
+        console.log('onmouseup');
+    });
+
+    /**
+     * touch移动事件
+     */
+    canvas.addEventListener('touchmove', function (e) {
+        //console.log('onmousemove')
+        //console.log(e.clientX, e.clientY)
+        let touch = e.touches[0];
+        let  currentLocation = windowToCanvas(touch.pageX,touch.pageY);
+        //let  currentLocation = {x:e.clientX,y:e.clientY}
+        //console.log(currentLocation.x,currentLocation.y);
+        if (isMouseDown) {
+            e.preventDefault();
+            //moveStroke({x: e.clientX, y: e.clientY});
+            context.beginPath();
+            if (preLocation){
+                context.moveTo(preLocation.x, preLocation.y);
+            }else {
+                context.moveTo(currentLocation.x, currentLocation.y);
+            }
+            context.lineTo(currentLocation.x, currentLocation.y);
+            context.strokeStyle = "#afafaf"
+            context.lineWidth = 1
+            context.lineCap = 'round'
+            context.lineJoin = 'round'
+            context.stroke();
+
+
+            //
+            let point = {x:null,y:null,createTime:null};
+            let canvasLocation = windowToCanvas(touch.pageX/canvasWidth,touch.pageY/canvasHeight);
+            point.x=canvasLocation.x;
+            point.y=canvasLocation.y;
+            point.createTime=new Date();
+            line.points.push(point);
+
+        }
+        preLocation = currentLocation;
+    });
+
+
 </script>
 </html>
