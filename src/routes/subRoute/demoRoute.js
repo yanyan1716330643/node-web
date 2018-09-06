@@ -42,8 +42,12 @@ router.get('/canvas/draw', function(req, res, next) {
 
 /* GET home page. */
 router.get('/canvas/show', function(req, res, next) {
-    res.render('demo/canvas/show', { title: 'canvas draw',wsIp:wsConfig.host,wsPort:wsConfig.port});
+    res.render('demo/canvas/show', { title: 'canvas show',wsIp:wsConfig.host,wsPort:wsConfig.port});
 });
 
+/* GET home page. */
+router.get('/chat/chat', function(req, res, next) {
+    res.render('demo/chat/chat', { title: 'chat',wsIp:wsConfig.host,wsPort:wsConfig.port});
+});
 
 module.exports = router;
