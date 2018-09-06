@@ -1,5 +1,11 @@
 let consoleUtil = require('../utils/consoleUtil');
-let wsConfig = require('../../run/pm2.config').apps[0].env.WS_CONFIG;
+let wsConfig;
+if (process.env.REDIS_CONFIG){
+    wsConfig = JSON.parse(process.env.WS_CONFIG);
+}else{
+    let pm2Env = require('../../run/pm2.config').apps[0].env;
+    wsConfig = pm2Env.WS_CONFIG;
+}
 
 var WebSocketServer = require('ws').Server;
 var wss = new WebSocketServer({port: wsConfig.port});
@@ -32,5 +38,5 @@ wss.on('connection', function(ws) {
 });
 
 module.exports = WebSocketServer;
-consoleUtil.info("ws start port"+wsConfig.port);
+consoleUtil.info("ws start port "+wsConfig.port);
 consoleUtil.log(__filename);

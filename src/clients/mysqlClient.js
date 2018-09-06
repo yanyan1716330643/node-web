@@ -1,8 +1,13 @@
 let consoleUtil = require("../utils/consoleUtil");
 let mysql = require('mysql');
-let pm2Env = require('../../run/pm2.config').apps[0].env;
-let mysqlConfig = process.env.MYSQL_CONFIG || pm2Env.MYSQL_CONFIG;
-consoleUtil.info("mysql config "+JSON.stringify(mysqlConfig))
+let mysqlConfig;
+if (process.env.MYSQL_CONFIG){
+    mysqlConfig = JSON.parse(process.env.MYSQL_CONFIG);
+}else{
+    let pm2Env = require('../../run/pm2.config').apps[0].env;
+    mysqlConfig = pm2Env.MYSQL_CONFIG;
+}
+consoleUtil.info("mysql config "+JSON.stringify(mysqlConfig));
 // let connection = mysql.createConnection({
 //     host     : mysqlConfig.host,
 //     user     : mysqlConfig.user,
@@ -11,8 +16,6 @@ consoleUtil.info("mysql config "+JSON.stringify(mysqlConfig))
 //     port:mysqlConfig.port
 // });
 let connection = mysql.createConnection(mysqlConfig);
-
-
 connection.connect(function(err) {
     if (err) {
         consoleUtil.error('mysql error connecting: ' + err.stack);
