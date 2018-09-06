@@ -1,4 +1,4 @@
-let localIp = "192.168.11.253";//106.14.185.18
+let localIp = "172.19.114.34";//106.14.185.18
 
 let redisConfig = {
     host: localIp,
