@@ -1,4 +1,5 @@
-let localIp = "172.19.114.34";//106.14.185.18
+let localIp = "172.19.114.34";//内网ip
+let ip = "106.14.185.18";//外网ip
 
 let redisConfig = {
     host: localIp,
@@ -16,7 +17,7 @@ let mysqlConfig = {
 };
 
 let wsConfig = {
-    host:localIp,
+    host:ip,
     port:8080
 };
 
