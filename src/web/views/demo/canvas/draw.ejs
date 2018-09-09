@@ -22,8 +22,12 @@
 
         <div id="clear_btn" class="op_btn">清除</div>
         <div id="draw_btn" class="op_btn">图画</div>
-        <div id="revoke0_btn" class="op_btn">-</div>
-        <div id="revoke1_btn" class="op_btn">+</div>
+
+        <div id="revoke1_btn" class="op_btn">反撤</div>
+        <div id="revoke0_btn" class="op_btn">撤销</div>
+        <div id="lineWidth1_btn" class="op_btn">线粗</div>
+        <input id="lineWidth_btn" class="op_btn" value="5"/>
+        <div id="lineWidth0_btn" class="op_btn">线细</div>
         <div class="clearfix"></div>
     </div>
 </div>
@@ -31,6 +35,60 @@
 <!--<script type="text/javascript" src="/javascripts/demo/canvas.js"></script>-->
 <!--<script src="/socket.io/socket.io.js"></script>-->
 <script>
+
+
+    function checkLineWidth(){
+        let newLineWidth = $("#lineWidth_btn").val();
+        if (newLineWidth==""){
+            newLineWidth = lineWidth;
+        }
+        if ("NaN"==Number(newLineWidth)+""){
+            newLineWidth = lineWidth;
+        }
+        if (newLineWidth<1||newLineWidth>=99){
+            newLineWidth = lineWidth;
+        }
+        lineWidth = newLineWidth;
+        $("#lineWidth_btn").val(lineWidth);
+        console.log($("#lineWidth_btn").val());
+    }
+
+    $("#lineWidth_btn").blur(checkLineWidth);
+
+    $("#lineWidth1_btn").click(
+        function (e) {
+            checkLineWidth();
+            if (lineWidth>=99){
+                return;
+            }
+            lineWidth = Number(lineWidth)+2;
+            $("#lineWidth_btn").val(lineWidth);
+        }
+    );
+
+    $("#lineWidth0_btn").click(
+        function (e) {
+            checkLineWidth();
+            if (lineWidth<2){
+                return;
+            }
+            lineWidth = lineWidth-2;
+            $("#lineWidth_btn").val(lineWidth);
+        }
+    )
+
+    /**
+     * 切换颜色控件绑定事件
+     */
+    $(".color_btn").click(
+        function (e) {
+            $('.color_btn').removeClass('color_btn_selected')
+            $(this).addClass('color_btn_selected')
+            strokeColor = $(this).css('background-color')
+        }
+    )
+
+
     let ws = new WebSocket("ws://<%= wsIp %>:<%= wsPort %>");
     ws.onopen = function() {
         console.log("onopen", "连接状态:" + ws.readyState);
@@ -86,7 +144,9 @@
     let preLocation;
     let isNewTouch = true;
     let isDrawing = false;
-    let line = {lineWidth:1,lineColor:strokeColor,points:[]};
+    let lineWidth = 5;
+    let line = {lineWidth:lineWidth,lineColor:strokeColor,points:[]};
+
 
     /**
      * 坐标转换
@@ -106,6 +166,7 @@
      */
     canvas.onmousedown = function (e) {
         e.preventDefault(); //阻止默认的动作发生
+        checkLineWidth();
         isDrawing = true;
         console.log('onmousedown');
     }
@@ -122,12 +183,13 @@
             newTrace.push(trace[i]);
         }
         trace = newTrace;
+        line.lineWidth = lineWidth;
         trace.push(line);
         traceVersion = traceVersion+1;
         drawLine(line);
         //send(line,traceVersion);
         send(trace,traceVersion);
-        line={lineWidth:1,lineColor:strokeColor,points:[]};
+        line={lineWidth:lineWidth,lineColor:strokeColor,points:[]};
         console.log('onmouseup');
     }
 
@@ -154,7 +216,7 @@
             }
             context.lineTo(currentLocation.x, currentLocation.y);
             context.strokeStyle = "#afafaf"
-            context.lineWidth = 1
+            context.lineWidth = lineWidth;
             context.lineCap = 'round'
             context.lineJoin = 'round'
             context.stroke();
@@ -251,6 +313,7 @@
      */
     canvas.addEventListener('touchstart', function (e) {
         e.preventDefault(); //阻止默认的动作发生
+        checkLineWidth();
         isDrawing = true;
         console.log('touchstart');
     });
@@ -267,12 +330,13 @@
             newTrace.push(trace[i]);
         }
         trace = newTrace;
+        line.lineWidth = lineWidth;
         trace.push(line);
         traceVersion = traceVersion+1;
         drawLine(line);
         //send(line,traceVersion);
         send(trace,traceVersion);
-        line={lineWidth:1,lineColor:strokeColor,points:[]};
+        line={lineWidth:lineWidth,lineColor:strokeColor,points:[]};
         console.log('touchend');
     });
 
@@ -303,7 +367,7 @@
                 }
                 context.lineTo(currentLocation.x, currentLocation.y);
                 context.strokeStyle = "#afafaf"
-                context.lineWidth = 1
+                context.lineWidth = lineWidth
                 context.lineCap = 'round'
                 context.lineJoin = 'round'
                 context.stroke();
