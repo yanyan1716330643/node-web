@@ -36,7 +36,8 @@
         console.log("onopen", "连接状态:" + ws.readyState);
     };
     ws.onmessage = function(evt) {
-        console.log("onmessage", "data:" + evt.data);
+        console.log("onmessage");
+        //console.log("onmessage", "data:" + evt.data);
     };
     ws.onclose = function(evt) {
         console.log("onclose");
@@ -55,7 +56,7 @@
                 traceVersion:traceVersion,
             }
         };
-        console.log("发送",JSON.stringify(wsMsg));
+        //console.log("发送",JSON.stringify(wsMsg));
         ws.send(JSON.stringify(wsMsg));
     };
 
@@ -64,36 +65,28 @@
     }
 
 
-
-
-
-
-    let line = {lineWidth:1,lineColor:"#ff0000",points:[]};
     let trace = [];
-    let isDrawing = false;
+
     let traceVersion = 0;
 
 
 
     let canvasWidth = Math.min(800, $(window).width() - 20);
     let canvasHeight = Math.min(800, $(window).width() - 20);
-    let strokeColor = "#ff0000";//'black';
-    let isMouseDown = false;
-    let lastLoc = {x: 0, y: 0};
-    let lastTimestamp = 0;
-    let lastLineWidth = -1;
-    let hasClean = false;
+
+
+
     let canvas = document.getElementById('canvas');
     let context = canvas.getContext('2d');
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
-    // let drawCanvas = document.getElementById('drawCanvas');//img
-    // drawCanvas.width = canvasWidth;
-    // drawCanvas.height = canvasHeight;
     $('#controller').css('width', canvasWidth + 'px');
 
+    let strokeColor = 'black';//'black';
     let preLocation;
-
+    let isNewTouch = true;
+    let isDrawing = false;
+    let line = {lineWidth:1,lineColor:strokeColor,points:[]};
 
     /**
      * 坐标转换
@@ -104,7 +97,7 @@
      */
     function windowToCanvas(x, y) {
         var box = canvas.getBoundingClientRect()
-        return {x: Math.round(x - box.left), y: Math.round(y - box.top)}
+        return {x: x - box.left, y: y - box.top}
     }
 
     /**
@@ -113,7 +106,7 @@
      */
     canvas.onmousedown = function (e) {
         e.preventDefault(); //阻止默认的动作发生
-        isMouseDown = true;
+        isDrawing = true;
         console.log('onmousedown');
     }
 
@@ -123,7 +116,7 @@
      */
     canvas.onmouseup = function (e) {
         e.preventDefault();
-        isMouseDown = false;
+        isDrawing = false;
         let newTrace = [];
         for (let i = 0; i < traceVersion; i++) {
             newTrace.push(trace[i]);
@@ -134,7 +127,7 @@
         drawLine(line);
         //send(line,traceVersion);
         send(trace,traceVersion);
-        line={lineWidth:1,lineColor:"#ff0000",points:[]};
+        line={lineWidth:1,lineColor:strokeColor,points:[]};
         console.log('onmouseup');
     }
 
@@ -148,14 +141,16 @@
         let  currentLocation = windowToCanvas(e.clientX,e.clientY);
         //let  currentLocation = {x:e.clientX,y:e.clientY}
         //console.log(currentLocation.x,currentLocation.y);
-        if (isMouseDown) {
+        if (isDrawing) {
             e.preventDefault();
             //moveStroke({x: e.clientX, y: e.clientY});
             context.beginPath();
             if (preLocation){
+                console.log("preLocation:"+JSON.stringify(preLocation));
                 context.moveTo(preLocation.x, preLocation.y);
             }else {
                 context.moveTo(currentLocation.x, currentLocation.y);
+                console.log("currentLocation:"+JSON.stringify(currentLocation));
             }
             context.lineTo(currentLocation.x, currentLocation.y);
             context.strokeStyle = "#afafaf"
@@ -168,9 +163,10 @@
             //
             let point = {x:null,y:null,createTime:null};
             let canvasLocation = windowToCanvas(e.clientX,e.clientY);
-            point.x=canvasLocation.x;
-            point.y=canvasLocation.y;
+            point.x=canvasLocation.x/canvasWidth;
+            point.y=canvasLocation.y/canvasHeight;
             point.createTime=new Date();
+            line.lineColor = strokeColor;
             line.points.push(point);
 
         }
@@ -235,12 +231,12 @@
         }
         let pointArr=line.points;
         context.beginPath();
-        context.moveTo(pointArr[0].x, pointArr[0]);
+        context.moveTo(pointArr[0].x*canvasWidth, pointArr[0].y*canvasHeight);
         for (let i=0;i<pointArr.length;i++){
-            console.log(pointArr[i].x, pointArr[i].y)
-            context.lineTo(pointArr[i].x, pointArr[i].y);
+            //console.log(pointArr[i].x, pointArr[i].y)
+            context.lineTo(pointArr[i].x*canvasWidth, pointArr[i].y*canvasHeight);
         }
-        context.lineTo(pointArr[pointArr.length-1].x,pointArr[pointArr.length-1].y);
+        context.lineTo(pointArr[pointArr.length-1].x*canvasWidth,pointArr[pointArr.length-1].y*canvasHeight);
         context.strokeStyle = line.lineColor;
         context.lineWidth = line.lineWidth;
         context.lineCap = 'round'
@@ -255,8 +251,8 @@
      */
     canvas.addEventListener('touchstart', function (e) {
         e.preventDefault(); //阻止默认的动作发生
-        isMouseDown = true;
-        console.log('onmousedown');
+        isDrawing = true;
+        console.log('touchstart');
     });
 
     /**
@@ -264,7 +260,8 @@
      */
     canvas.addEventListener('touchend', function (e) {
         e.preventDefault();
-        isMouseDown = false;
+        isDrawing = false;
+        isNewTouch = true;
         let newTrace = [];
         for (let i = 0; i < traceVersion; i++) {
             newTrace.push(trace[i]);
@@ -275,47 +272,52 @@
         drawLine(line);
         //send(line,traceVersion);
         send(trace,traceVersion);
-        line={lineWidth:1,lineColor:"#ff0000",points:[]};
-        console.log('onmouseup');
+        line={lineWidth:1,lineColor:strokeColor,points:[]};
+        console.log('touchend');
     });
 
     /**
      * touch移动事件
      */
     canvas.addEventListener('touchmove', function (e) {
-        //console.log('onmousemove')
+        console.log('touchmove')
         //console.log(e.clientX, e.clientY)
         let touch = e.touches[0];
+
         let  currentLocation = windowToCanvas(touch.pageX,touch.pageY);
         //let  currentLocation = {x:e.clientX,y:e.clientY}
         //console.log(currentLocation.x,currentLocation.y);
-        if (isMouseDown) {
-            e.preventDefault();
-            //moveStroke({x: e.clientX, y: e.clientY});
-            context.beginPath();
-            if (preLocation){
-                context.moveTo(preLocation.x, preLocation.y);
+        if (isDrawing) {
+            if (isNewTouch){
+                console.log("isNewTouch");
             }else {
-                context.moveTo(currentLocation.x, currentLocation.y);
+                e.preventDefault();
+                //moveStroke({x: e.clientX, y: e.clientY});
+                context.beginPath();
+                if (preLocation){
+                    console.log("preLocation:"+JSON.stringify(preLocation));
+                    context.moveTo(preLocation.x, preLocation.y);
+                }else {
+                    context.moveTo(currentLocation.x, currentLocation.y);
+                    console.log("currentLocation:"+JSON.stringify(currentLocation));
+                }
+                context.lineTo(currentLocation.x, currentLocation.y);
+                context.strokeStyle = "#afafaf"
+                context.lineWidth = 1
+                context.lineCap = 'round'
+                context.lineJoin = 'round'
+                context.stroke();
             }
-            context.lineTo(currentLocation.x, currentLocation.y);
-            context.strokeStyle = "#afafaf"
-            context.lineWidth = 1
-            context.lineCap = 'round'
-            context.lineJoin = 'round'
-            context.stroke();
-
-
-            //
             let point = {x:null,y:null,createTime:null};
-            let canvasLocation = windowToCanvas(touch.pageX/canvasWidth,touch.pageY/canvasHeight);
-            point.x=canvasLocation.x;
-            point.y=canvasLocation.y;
+            let canvasLocation = windowToCanvas(touch.pageX,touch.pageY);
+            point.x=canvasLocation.x/canvasWidth;
+            point.y=canvasLocation.y/canvasHeight;
             point.createTime=new Date();
+            line.lineColor = strokeColor;
             line.points.push(point);
-
         }
         preLocation = currentLocation;
+        isNewTouch = false;
     });
 
 

@@ -86,12 +86,12 @@
         }
         let pointArr=line.points;
         context.beginPath();
-        context.moveTo(pointArr[0].x, pointArr[0]);
+        context.moveTo(pointArr[0].x*canvasWidth, pointArr[0].y*canvasHeight);
         for (let i=0;i<pointArr.length;i++){
-            console.log(pointArr[i].x, pointArr[i].y)
-            context.lineTo(pointArr[i].x, pointArr[i].y);
+            //console.log(pointArr[i].x, pointArr[i].y)
+            context.lineTo(pointArr[i].x*canvasWidth, pointArr[i].y*canvasHeight);
         }
-        context.lineTo(pointArr[pointArr.length-1].x,pointArr[pointArr.length-1].y);
+        context.lineTo(pointArr[pointArr.length-1].x*canvasWidth,pointArr[pointArr.length-1].y*canvasHeight);
         context.strokeStyle = line.lineColor;
         context.lineWidth = line.lineWidth;
         context.lineCap = 'round'
