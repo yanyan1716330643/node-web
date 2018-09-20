@@ -22,7 +22,8 @@
     "mongoose": "^5.2.10",
     "mysql": "^2.16.0",
     "redis": "^2.8.0",
-    "express-status-monitor": "^1.1.5"
+    "express-status-monitor": "^1.1.5",
+    "chalk": "^2.4.1"
   },
   "author": "",
   "license": "ISC",

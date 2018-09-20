@@ -1,12 +1,13 @@
 let debug = require('debug')('demo:servers');
+const chalk = require('chalk');
 
 let consoleUtil = {
     log: function(data){
         //console.log("\tlog",data);
-        console.log("log   >",data);
+        console.log("log   >",chalk.rgb(0, 0, 255)(data));
     },
     info: function(data){
-        console.info("info  >",data);
+        console.info("info  >",chalk.green(data));
         //console.info("\t\tinfo",data);
     },
     error: function(data){
